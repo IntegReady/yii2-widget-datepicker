@@ -7,7 +7,7 @@
  * @version 1.3.9
  */
 
-namespace kartik\date;
+namespace dieruckus\date;
 
 use Yii;
 use yii\helpers\Html;
