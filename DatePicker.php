@@ -44,7 +44,6 @@ class DatePicker extends InputWidget
     /**
      * @var string The size of the input - 'lg', 'md', 'sm', 'xs'
      */
-    //
     
     public $size;
 
