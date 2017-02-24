@@ -41,7 +41,7 @@ You can refer detailed [documentation and demos](http://demos.krajee.com/widget-
 ## Usage
 
 ```php
-use kartik\date\DatePicker;
+use dieruckus\date\DatePicker;
 
 // usage without model
 echo '<label>Check Issue Date</label>';
