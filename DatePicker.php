@@ -7,15 +7,15 @@
  * @version 1.3.9
  */
 
-namespace dieruckus\date;
+namespace integready\datepicker;
 
-use Yii;
-use yii\helpers\Html;
-use yii\helpers\ArrayHelper;
-use yii\base\InvalidConfigException;
-use yii\widgets\ActiveForm;
 use kartik\base\InputWidget;
 use kartik\field\FieldRangeAsset;
+use Yii;
+use yii\base\InvalidConfigException;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
 
 /**
  * DatePicker widget is a Yii2 wrapper for the Bootstrap DatePicker plugin. The plugin is a fork of Stefan Petre's
@@ -27,13 +27,13 @@ use kartik\field\FieldRangeAsset;
  */
 class DatePicker extends InputWidget
 {
-    const CALENDAR_ICON = '<i class="glyphicon glyphicon-calendar"></i>';
-    const TYPE_INPUT = 1;
+    const CALENDAR_ICON          = '<i class="glyphicon glyphicon-calendar"></i>';
+    const TYPE_INPUT             = 1;
     const TYPE_COMPONENT_PREPEND = 2;
-    const TYPE_COMPONENT_APPEND = 3;
-    const TYPE_INLINE = 4;
-    const TYPE_RANGE = 5;
-    const TYPE_BUTTON = 6;
+    const TYPE_COMPONENT_APPEND  = 3;
+    const TYPE_INLINE            = 4;
+    const TYPE_RANGE             = 5;
+    const TYPE_BUTTON            = 6;
 
     /**
      * @var string the markup type of widget markup must be one of the TYPE constants. Defaults to
@@ -44,7 +44,7 @@ class DatePicker extends InputWidget
     /**
      * @var string The size of the input - 'lg', 'md', 'sm', 'xs'
      */
-    
+
     public $size;
 
     /**
@@ -133,26 +133,22 @@ class DatePicker extends InputWidget
      * @var string the range input separator if you are using [[TYPE_RANGE]] for markup. Defaults to 'to'.
      */
     public $separator = 'to';
-
-    /**
-     * @var array the HTML options for the DatePicker container
-     */
-    private $_container = [];
-
-    /**
-     * @var bool whether a prepend or append addon exists
-     */
-    protected $_hasAddon = false;
-
     /**
      * @inheritdoc
      */
     public $pluginName = 'kvDatepicker';
-
+    /**
+     * @var bool whether a prepend or append addon exists
+     */
+    protected $_hasAddon = false;
     /**
      * @inheritdoc
      */
     protected $_msgCat = 'kvdate';
+    /**
+     * @var array the HTML options for the DatePicker container
+     */
+    private $_container = [];
 
     /**
      * @inheritdoc
@@ -170,7 +166,7 @@ class DatePicker extends InputWidget
     {
         $this->validateConfig();
         $this->_hasAddon = $this->type == self::TYPE_COMPONENT_PREPEND || $this->type == self::TYPE_COMPONENT_APPEND;
-        $s = DIRECTORY_SEPARATOR;
+        $s               = DIRECTORY_SEPARATOR;
         $this->initI18N(__DIR__);
         $this->setLanguage('bootstrap-datepicker.', __DIR__ . "{$s}assets{$s}", null, '.min.js');
         $this->parseDateFormat('date');
@@ -190,21 +186,9 @@ class DatePicker extends InputWidget
         Html::addCssClass($this->options, 'krajee-datepicker');
         $this->options['data-datepicker-source'] = $this->type === self::TYPE_INPUT ? $this->options['id'] :
             $this->_container['id'];
-        $this->options['data-datepicker-type'] = $this->type;
+        $this->options['data-datepicker-type']   = $this->type;
         $this->registerAssets();
         echo $this->renderInput();
-    }
-
-    /**
-     * Raise an error exception
-     *
-     * @param string $msg
-     *
-     * @throws InvalidConfigException
-     */
-    protected static function err($msg = '')
-    {
-        throw new InvalidConfigException($msg);
     }
 
     /**
@@ -223,9 +207,9 @@ class DatePicker extends InputWidget
             }
             if (!class_exists("\\kartik\\field\\FieldRangeAsset")) {
                 static::err(
-                    "The yii2-field-range extension is not installed and is a pre-requisite for a DatePicker " .
+                    'The yii2-field-range extension is not installed and is a pre-requisite for a DatePicker ' .
                     "RANGE type. To install this extension run this command on your console: \n\n" .
-                    "php composer.phar require kartik-v/yii2-field-range \"*\""
+                    'php composer.phar require kartik-v/yii2-field-range \"*\"'
                 );
             }
         }
@@ -240,6 +224,54 @@ class DatePicker extends InputWidget
         }
         if ($this->type === self::TYPE_RANGE && !isset($this->attribute2)) {
             static::err("The 'attribute2' property must be set for a 'range' type markup and a defined 'form' property.");
+        }
+    }
+
+    /**
+     * Raise an error exception
+     *
+     * @param string $msg
+     *
+     * @throws InvalidConfigException
+     */
+    protected static function err($msg = '')
+    {
+        throw new InvalidConfigException($msg);
+    }
+
+    /**
+     * Registers the needed client assets
+     *
+     * @return void
+     */
+    public function registerAssets()
+    {
+        if ($this->disabled) {
+            return;
+        }
+        $view = $this->getView();
+        $view->registerJs('jQuery.fn.kvDatepicker.dates={};');
+        if (!empty($this->_langFile)) {
+            DatePickerAsset::register($view)->js[] = $this->_langFile;
+        } else {
+            DatePickerAsset::register($view);
+        }
+        $id    = $this->options['id'];
+        $input = "jQuery('#{$id}')";
+        $el    = "jQuery('#" . $this->options['data-datepicker-source'] . "')";
+        $this->registerPlugin($this->pluginName, $el);
+        if ($this->type === self::TYPE_INLINE) {
+            $view->registerJs("{$el}.on('changeDate',function(e){{$input}.val(e.format()).trigger('change')});");
+        }
+        if ($this->_hasAddon && $this->removeButton !== false) {
+            $view->registerJs("initDPRemove('{$id}');");
+        }
+        if ($this->_hasAddon) {
+            $view->registerJs("initDPAddon('{$id}');");
+        }
+        if ($this->type === self::TYPE_RANGE) {
+            FieldRangeAsset::register($view);
+            $view->registerJs("initDPRemove('{$id}', true);");
         }
     }
 
@@ -261,16 +293,99 @@ class DatePicker extends InputWidget
         if (isset($this->form) && ($this->type !== self::TYPE_RANGE)) {
             $vars = call_user_func('get_object_vars', $this);
             unset($vars['form']);
-            return $this->form->field($this->model, $this->attribute)->widget(self::classname(), $vars);
+
+            return $this->form->field($this->model, $this->attribute)->widget(self::className(), $vars);
         }
         $input = $this->type == self::TYPE_BUTTON ? 'hiddenInput' : 'textInput';
+
         return $this->parseMarkup($this->getInput($input));
+    }
+
+    /**
+     * Parses the input to render based on markup type
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    protected function parseMarkup($input)
+    {
+        $css  = $this->disabled ? ' disabled' : '';
+        $size = isset($this->size) ? "input-{$this->size} " : '';
+        switch ($this->type) {
+            case self::TYPE_INPUT:
+                Html::addCssClass($this->options, $size . $css);
+
+                return $input;
+            case self::TYPE_COMPONENT_PREPEND:
+            case self::TYPE_COMPONENT_APPEND:
+                $size = isset($this->size) ? "input-group-{$this->size} " : '';
+                Html::addCssClass($this->_container, "input-group {$size}date");
+                $out = strtr($this->layout, [
+                    '{picker}' => $this->renderAddon($this->pickerButton),
+                    '{remove}' => $this->renderAddon($this->removeButton, 'remove'),
+                    '{input}'  => $input,
+                ]);
+
+                return Html::tag('div', $out, $this->_container);
+            case self::TYPE_BUTTON:
+                Html::addCssClass($this->_container, 'date' . $css);
+                $label = ArrayHelper::remove($this->buttonOptions, 'label', self::CALENDAR_ICON);
+                if (!isset($this->buttonOptions['disabled'])) {
+                    $this->buttonOptions['disabled'] = $this->disabled;
+                }
+                if (empty($this->buttonOptions['class'])) {
+                    $this->buttonOptions['class'] = 'btn btn-default';
+                }
+                $button = Html::button($label, $this->buttonOptions);
+                Html::addCssStyle($this->_container, 'display:block');
+
+                return Html::tag('span', "{$input}{$button}", $this->_container);
+            case self::TYPE_RANGE:
+                $size = isset($this->size) ? "input-group-{$this->size} " : '';
+                Html::addCssClass($this->_container, "input-group {$size}input-daterange");
+                $this->initDisability($this->options2);
+                if (isset($this->form)) {
+                    Html::addCssClass($this->options, 'form-control kv-field-from');
+                    Html::addCssClass($this->options2, 'form-control kv-field-to');
+                    $input  = $this->form->field($this->model, $this->attribute, [
+                        'template' => '{input}{error}',
+                        'options'  => ['class' => 'kv-container-from form-control'],
+                    ])->textInput($this->options);
+                    $input2 = $this->form->field($this->model, $this->attribute2, [
+                        'template' => '{input}{error}',
+                        'options'  => ['class' => 'kv-container-to form-control'],
+                    ])->textInput($this->options2);
+                } else {
+                    if (empty($this->options2['id'])) {
+                        $this->options2['id'] = $this->hasModel() ? Html::getInputId($this->model, $this->attribute2) :
+                            $this->getId() . '-2';
+                    }
+                    Html::addCssClass($this->options2, 'form-control');
+                    $input2 = $this->hasModel() ?
+                        Html::activeTextInput($this->model, $this->attribute2, $this->options2) :
+                        Html::textInput($this->name2, $this->value2, $this->options2);
+                }
+                $out = strtr($this->layout, [
+                    '{input1}'    => $input,
+                    '{separator}' => "<span class='input-group-addon kv-field-separator'>{$this->separator}</span>",
+                    '{input2}'    => $input2,
+                ]);
+
+                return Html::tag('div', $out, $this->_container);
+            case self::TYPE_INLINE:
+                Html::addCssClass($this->options, $size . $css);
+
+                return Html::tag('div', '', $this->_container) . $input;
+            default:
+                return '';
+        }
     }
 
     /**
      * Returns the addon to render
      *
-     * @param array  $options the HTML attributes for the addon
+     * @param array $options the HTML attributes for the addon
      * @param string $type whether the addon is the picker or remove
      *
      * @return string
@@ -285,124 +400,13 @@ class DatePicker extends InputWidget
         }
         $icon = ($type === 'picker') ? 'calendar' : 'remove';
         Html::addCssClass($options, 'input-group-addon kv-date-' . $icon);
-        $icon = '<i class="glyphicon glyphicon-' . ArrayHelper::remove($options, 'icon', $icon) . '"></i>';
+        $icon  = '<i class="glyphicon glyphicon-' . ArrayHelper::remove($options, 'icon', $icon) . '"></i>';
         $title = ArrayHelper::getValue($options, 'title', '');
         if ($title !== false && empty($title)) {
             $options['title'] = ($type === 'picker') ? Yii::t('kvdate', 'Select date') :
                 Yii::t('kvdate', 'Clear field');
         }
+
         return Html::tag('span', $icon, $options);
-    }
-
-    /**
-     * Parses the input to render based on markup type
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    protected function parseMarkup($input)
-    {
-        $css = $this->disabled ? ' disabled' : '';
-        $size = isset($this->size) ? "input-{$this->size} " : '';
-        switch ($this->type) {
-            case self::TYPE_INPUT:
-                Html::addCssClass($this->options, $size . $css);
-                return $input;
-            case self::TYPE_COMPONENT_PREPEND:
-            case self::TYPE_COMPONENT_APPEND:
-                $size = isset($this->size) ? "input-group-{$this->size} " : '';
-                Html::addCssClass($this->_container, "input-group {$size}date");
-                $out = strtr($this->layout, [
-                    '{picker}' => $this->renderAddon($this->pickerButton),
-                    '{remove}' => $this->renderAddon($this->removeButton, 'remove'),
-                    '{input}' => $input
-                ]);
-                return Html::tag('div', $out, $this->_container);
-            case self::TYPE_BUTTON:
-                Html::addCssClass($this->_container, 'date' . $css);
-                $label = ArrayHelper::remove($this->buttonOptions, 'label', self::CALENDAR_ICON);
-                if (!isset($this->buttonOptions['disabled'])) {
-                    $this->buttonOptions['disabled'] = $this->disabled;
-                }
-                if (empty($this->buttonOptions['class'])) {
-                    $this->buttonOptions['class'] = 'btn btn-default';
-                }
-                $button = Html::button($label, $this->buttonOptions);
-                Html::addCssStyle($this->_container, 'display:block');
-                return Html::tag('span', "{$input}{$button}", $this->_container);
-            case self::TYPE_RANGE:
-                $size = isset($this->size) ? "input-group-{$this->size} " : '';
-                Html::addCssClass($this->_container, "input-group {$size}input-daterange");
-                $this->initDisability($this->options2);
-                if (isset($this->form)) {
-                    Html::addCssClass($this->options, 'form-control kv-field-from');
-                    Html::addCssClass($this->options2, 'form-control kv-field-to');
-                    $input = $this->form->field($this->model, $this->attribute, [
-                        'template' => '{input}{error}',
-                        'options' => ['class' => 'kv-container-from form-control'],
-                    ])->textInput($this->options);
-                    $input2 = $this->form->field($this->model, $this->attribute2, [
-                        'template' => '{input}{error}',
-                        'options' => ['class' => 'kv-container-to form-control'],
-                    ])->textInput($this->options2);
-                } else {
-                    if (empty($this->options2['id'])) {
-                        $this->options2['id'] = $this->hasModel() ? Html::getInputId($this->model, $this->attribute2) :
-                            $this->getId() . '-2';
-                    }
-                    Html::addCssClass($this->options2, 'form-control');
-                    $input2 = $this->hasModel() ?
-                        Html::activeTextInput($this->model, $this->attribute2, $this->options2) :
-                        Html::textInput($this->name2, $this->value2, $this->options2);
-                }
-                $out = strtr($this->layout, [
-                    '{input1}' => $input,
-                    '{separator}' => "<span class='input-group-addon kv-field-separator'>{$this->separator}</span>",
-                    '{input2}' => $input2
-                ]);
-                return Html::tag('div', $out, $this->_container);
-            case self::TYPE_INLINE:
-                Html::addCssClass($this->options, $size . $css);
-                return Html::tag('div', '', $this->_container) . $input;
-            default:
-                return '';
-        }
-    }
-
-    /**
-     * Registers the needed client assets
-     *
-     * @return void
-     */
-    public function registerAssets()
-    {
-        if ($this->disabled) {
-            return;
-        }
-        $view = $this->getView();
-        $view->registerJs('jQuery.fn.kvDatepicker.dates={};');
-        if (!empty($this->_langFile)) {
-            DatePickerAsset::register($view)->js[] = $this->_langFile;
-        } else {
-            DatePickerAsset::register($view);
-        }
-        $id = $this->options['id'];
-        $input = "jQuery('#{$id}')";
-        $el = "jQuery('#" . $this->options['data-datepicker-source'] . "')";
-        $this->registerPlugin($this->pluginName, $el);
-        if ($this->type === self::TYPE_INLINE) {
-            $view->registerJs("{$el}.on('changeDate',function(e){{$input}.val(e.format()).trigger('change')});");
-        }
-        if ($this->_hasAddon && $this->removeButton !== false) {
-            $view->registerJs("initDPRemove('{$id}');");
-        }
-        if ($this->_hasAddon) {
-            $view->registerJs("initDPAddon('{$id}');");
-        }
-        if ($this->type === self::TYPE_RANGE) {
-            FieldRangeAsset::register($view);
-            $view->registerJs("initDPRemove('{$id}', true);");
-        }
     }
 }
