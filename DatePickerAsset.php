@@ -7,7 +7,7 @@
  * @version 1.3.9
  */
 
-namespace dieruckus\date;
+namespace integready\datepicker;
 
 use kartik\base\AssetBundle;
 
