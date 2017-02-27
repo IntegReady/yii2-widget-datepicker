@@ -1,4 +1,4 @@
-yii2-widget-datepicker
+yii2-datepicker-widget
 ======================
 
 The DatePicker widget is a Yii 2 wrapper for the [Bootstrap DatePicker plugin](http://eternicode.github.io/bootstrap-datepicker) with various enhancements. The plugin is a fork of Stefan Petre's DatePicker (of eyecon.ro), with improvements by @eternicode. The widget is specially styled for Yii framework 2.0 and Bootstrap 3 and allows graceful degradation to a normal HTML text input, if the browser does not support JQuery. The widget supports these markups:
@@ -19,13 +19,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 To install, either run
 
 ```
-$ php composer.phar require dieruckus/yii2-widget-datepicker "@dev"
+$ php composer.phar require integready/yii2-datepicker-widget "@dev"
 ```
 
 or add
 
 ```
-"dieruckus/yii2-widget-datepicker": "@dev"
+"integready/yii2-datepicker-widget": "@dev"
 ```
 
 to the `require` section of your `composer.json` file.
@@ -41,7 +41,7 @@ You can refer detailed [documentation and demos](http://demos.krajee.com/widget-
 ## Usage
 
 ```php
-use dieruckus\date\DatePicker;
+use integready\date\DatePicker;
 
 // usage without model
 echo '<label>Check Issue Date</label>';
@@ -58,4 +58,4 @@ echo DatePicker::widget([
 
 ## License
 
-**yii2-widget-datepicker** is released under the BSD 3-Clause License. See the bundled `LICENSE.md` for details.
+**yii2-datepicker-widget** is released under the BSD 3-Clause License. See the bundled `LICENSE.md` for details.
